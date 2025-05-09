@@ -38,14 +38,20 @@ def signup_post():
     email = request.form.get('email')
     name = request.form.get('name')
     password = request.form.get('password')
-
+    
+    # Directly concatenates user input into an SQL query without sanitisation or parameterisation. This makes the system vulnerable to SQL injection. 
+    # Violated Principle: Input Validation, Use of Parameterised Queries.
     user = db.session.execute(text('select * from user where email = "' + email +'"')).all()
+
+    # The judgment method is not semantically clear enough. It is recommended to use ORM's .first() to determine whether it exists.
     if len(user) > 0: # if a user is found, we want to redirect back to signup page so user can try again
         flash('Email address already exists')  # 'flash' function stores a message accessible in the template code.
         app.logger.debug("User email already exists")
         return redirect(url_for('auth.signup'))
 
     # create a new user with the form data. TODO: Hash the password so the plaintext version isn't saved.
+    # User passwords are not encrypted/hashed and are written directly to the database in plain text, making them very easy to be read directly in the event of a data breach.
+    # Violation of security principles: Secure Storage of Secrets
     new_user = User(email=email, name=name, password=password)
 
     # add the new user to the database
